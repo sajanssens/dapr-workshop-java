@@ -1,9 +1,13 @@
 package dapr.fines.violation;
 
+import io.dapr.Topic;
+import io.dapr.client.domain.CloudEvent;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
 
 @RestController
 public class ViolationController {
@@ -13,8 +17,10 @@ public class ViolationController {
         this.violationProcessor = violationProcessor;
     }
 
+    @Topic(name = "speedingviolations", pubsubName = "pubsub")
     @PostMapping(path = "/collectfine")
-    public ResponseEntity<Void> registerViolation(@RequestBody final SpeedingViolation violation) {
+    public ResponseEntity<Void> registerViolation(@RequestBody final CloudEvent<SpeedingViolation> event) {
+        var violation = event.getData();
         violationProcessor.processSpeedingViolation(violation);
         return ResponseEntity.ok().build();
     }
